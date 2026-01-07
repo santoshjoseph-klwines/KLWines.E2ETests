@@ -1,6 +1,9 @@
 {
   "name": "klwines-e2e-tests",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "test": "npx playwright test",
     "test:staging": "cross-env ENV=staging npx playwright test",

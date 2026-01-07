@@ -71,6 +71,17 @@ npm run test:mobile:prod
 npx playwright test tests/auth/login.spec.ts
 ```
 
+Or with npm scripts (use `--` to pass arguments, and use forward slashes `/` even on Windows):
+```bash
+# For a specific test file with project and environment
+cross-env ENV=staging npx playwright test tests/browsing/links.spec.ts --project desktop-chrome
+
+# Or using the base test script with all flags
+npm run test:staging -- tests/browsing/links.spec.ts --project desktop-chrome
+```
+
+**Note:** Always use forward slashes (`/`) in file paths, even on Windows. Backslashes (`\`) may cause issues.
+
 ### Run a specific test by name
 ```bash
 npx playwright test --grep "should login with valid credentials"

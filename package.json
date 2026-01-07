@@ -1,0 +1,21 @@
+{
+  "name": "klwines-e2e-tests",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:staging": "cross-env ENV=staging npx playwright test",
+    "test:prod": "cross-env ENV=prod npx playwright test --grep @prod-safe",
+    "test:desktop": "npx playwright test --project desktop-chrome",
+    "test:mobile": "npx playwright test --project mobile-safari",
+    "test:desktop:staging": "cross-env ENV=staging npx playwright test --project desktop-chrome",
+    "test:mobile:staging": "cross-env ENV=staging npx playwright test --project mobile-safari",
+    "test:desktop:prod": "cross-env ENV=prod npx playwright test --project desktop-chrome --grep @prod-safe",
+    "test:mobile:prod": "cross-env ENV=prod npx playwright test --project mobile-safari --grep @prod-safe",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.41.0",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.3.1"
+  }
+}

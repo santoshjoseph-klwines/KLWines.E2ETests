@@ -1,0 +1,88 @@
+trigger:
+  branches:
+    include:
+      - main
+      - master
+  paths:
+    include:
+      - tests/**
+      - pages/**
+      - utils/**
+      - playwright.config.ts
+      - package.json
+
+# Allow manual trigger and trigger from other pipelines
+pr: none
+
+stages:
+- stage: E2ETests
+  displayName: 'E2E Tests'
+  jobs:
+    - job: runTests
+      displayName: 'Run Playwright Tests'
+      pool:
+        vmImage: 'ubuntu-latest'
+      strategy:
+        matrix:
+          DesktopChrome:
+            browser: 'desktop-chrome'
+          MobileSafari:
+            browser: 'mobile-safari'
+      steps:
+        - checkout: self
+        
+        - task: NodeTool@0
+          displayName: 'Setup Node.js'
+          inputs:
+            versionSpec: '20.x'
+        
+        - script: |
+            npm ci
+            npx playwright install --with-deps
+          displayName: 'Install Dependencies'
+        
+        - script: |
+            ENV=staging npx playwright test --project=$(browser) --reporter=html,list
+          displayName: 'Run Playwright Tests ($(browser))'
+          env:
+            TEST_USER_EMAIL: $(TEST_USER_EMAIL)
+            TEST_USER_PASSWORD: $(TEST_USER_PASSWORD)
+            TEST_USER_FIRST_NAME: $(TEST_USER_FIRST_NAME)
+            TEST_USER_LAST_NAME: $(TEST_USER_LAST_NAME)
+            TEST_PRODUCT_SKUS: $(TEST_PRODUCT_SKUS)
+        
+        - task: PublishTestResults@2
+          displayName: 'Publish Test Results'
+          condition: always()
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: 'test-results/**/*.xml'
+            mergeTestResults: true
+            failTaskOnFailedTests: false
+        
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Playwright Report'
+          condition: always()
+          inputs:
+            pathToPublish: 'playwright-report'
+            artifactName: 'playwright-report-$(browser)'
+        
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Test Screenshots'
+          condition: always()
+          inputs:
+            pathToPublish: 'test-results'
+            artifactName: 'test-results-$(browser)'
+
+- stage: NotifyOnFailure
+  displayName: 'Notify on Failure'
+  condition: failed()
+  jobs:
+    - job: notify
+      displayName: 'Send Notification'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: |
+            echo "E2E tests failed. Please check the test results and artifacts."
+          displayName: 'Failure Notification'
